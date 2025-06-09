@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import {
   AppBar,
@@ -71,7 +69,7 @@ const Header: React.FC = () => {
         </IconButton>
 
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-          Square Loyalty Program
+          {process.env.REACT_APP_NAME || "Square Loyalty Program"}
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -89,7 +87,7 @@ const Header: React.FC = () => {
             color="inherit"
           >
             <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }}>
-              {user?.name?.charAt(0).toUpperCase() ?? "U"}
+              {user?.name?.charAt(0).toUpperCase() || "U"}
             </Avatar>
           </IconButton>
         </Box>
@@ -110,7 +108,7 @@ const Header: React.FC = () => {
         >
           <MenuItem disabled>
             <AccountCircle sx={{ mr: 1 }} />
-            {user?.name ?? "User"}
+            {user?.name || "User"}
           </MenuItem>
           <Divider />
           <MenuItem onClick={handleLogout}>

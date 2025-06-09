@@ -1,6 +1,7 @@
 import type React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import { Provider, useSelector } from "react-redux";
+import { useEffect } from "react";
 import { store } from "./store";
 import AppLayout from "./components/Layout/AppLayout";
 import LoginForm from "./components/Auth/LoginForm";
@@ -13,6 +14,11 @@ import type { RootState } from "./store";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  // Set document title dynamically
+  useEffect(() => {
+    document.title = process.env.REACT_APP_NAME ?? "Square Loyalty Program";
+  }, []);
 
   if (!isAuthenticated) {
     return (

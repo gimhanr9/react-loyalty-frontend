@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Snackbar, Alert } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
