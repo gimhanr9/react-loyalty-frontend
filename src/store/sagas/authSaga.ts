@@ -1,13 +1,10 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import type { PayloadAction } from "@reduxjs/toolkit";
-
-import { authApi } from "../../services/apiClient";
+import { loginRequest, loginSuccess, loginFailure } from "../slices/authSlice";
 import { addNotification } from "../slices/uiSlice";
-import { loginFailure, loginRequest, loginSuccess } from "../slices/authSlice";
+import { authApi } from "services/apiClient";
 
-function* loginSaga(
-  action: PayloadAction<{ email: string; password: string }>
-) {
+function* loginSaga(action: PayloadAction<{ phoneNumber: string }>) {
   try {
     const response: { user: any; token: string } = yield call(
       authApi.login,
@@ -21,7 +18,7 @@ function* loginSaga(
       })
     );
   } catch (error: any) {
-    const errorMessage = error.response?.data?.message ?? "Login failed";
+    const errorMessage = error.response?.data?.message || "Login failed";
     yield put(loginFailure(errorMessage));
     yield put(
       addNotification({

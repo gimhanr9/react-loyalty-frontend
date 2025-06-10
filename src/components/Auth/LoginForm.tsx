@@ -9,39 +9,57 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  FormControl,
+  Tooltip,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
-import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
+import { Phone, Info } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../store";
 import { loginRequest, clearError } from "../../store/slices/authSlice";
+import { countryCodes, type CountryCode } from "../../data/countryCodes";
+import {
+  validatePhoneNumber,
+  formatPhoneNumber,
+} from "../../utils/phoneValidation";
 
 const validationSchema = yup.object({
-  email: yup
+  countryCode: yup.string().required("Country code is required"),
+  phoneNumber: yup
     .string()
-    .email("Enter a valid email")
-    .required("Email is required"),
-  password: yup
-    .string()
-    .min(6, "Password should be of minimum 6 characters length")
-    .required("Password is required"),
+    .required("Phone number is required")
+    .test(
+      "phone-validation",
+      "Please enter a valid phone number",
+      function (value) {
+        const { countryCode } = this.parent;
+        if (!value || !countryCode) return false;
+        return validatePhoneNumber(value, countryCode);
+      }
+    ),
 });
 
 const LoginForm: React.FC = () => {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: RootState) => state.auth);
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [selectedCountry, setSelectedCountry] = React.useState<CountryCode>(
+    countryCodes.find((c) => c.code === "US") || countryCodes[0]
+  );
 
   const formik = useFormik({
     initialValues: {
-      email: "",
-      password: "",
+      countryCode: selectedCountry.dialCode,
+      phoneNumber: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      dispatch(loginRequest(values));
+      const fullPhoneNumber = `${
+        values.countryCode
+      }${values.phoneNumber.replace(/[^\d]/g, "")}`;
+      dispatch(loginRequest({ phoneNumber: fullPhoneNumber }));
     },
   });
 
@@ -51,8 +69,29 @@ const LoginForm: React.FC = () => {
     };
   }, [dispatch]);
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
+  const handleCountryChange = (event: any, newValue: CountryCode | null) => {
+    if (newValue) {
+      setSelectedCountry(newValue);
+      formik.setFieldValue("countryCode", newValue.dialCode);
+    }
+  };
+
+  const handlePhoneNumberChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value;
+    const formatted = formatPhoneNumber(value, selectedCountry.dialCode);
+    formik.setFieldValue("phoneNumber", formatted);
+  };
+
+  const getFullPhoneNumber = () => {
+    if (formik.values.phoneNumber) {
+      return `${formik.values.countryCode}${formik.values.phoneNumber.replace(
+        /[^\d]/g,
+        ""
+      )}`;
+    }
+    return "";
   };
 
   return (
@@ -81,7 +120,7 @@ const LoginForm: React.FC = () => {
             Square Loyalty
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Sign in to your account
+            Sign in with your phone number
           </Typography>
 
           {error && (
@@ -95,69 +134,109 @@ const LoginForm: React.FC = () => {
             onSubmit={formik.handleSubmit}
             sx={{ width: "100%" }}
           >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-              slotProps={{
-                input: {
+            {/* Country Code Selector */}
+            <FormControl fullWidth margin="normal">
+              <Autocomplete
+                value={selectedCountry}
+                onChange={handleCountryChange}
+                options={countryCodes}
+                getOptionLabel={(option) =>
+                  `${option.flag} ${option.name} (${option.dialCode})`
+                }
+                renderOption={(props, option) => (
+                  <Box component="li" {...props}>
+                    <Box sx={{ mr: 2, fontSize: "1.2em" }}>{option.flag}</Box>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2">{option.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.dialCode}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Country"
+                    error={
+                      formik.touched.countryCode &&
+                      Boolean(formik.errors.countryCode)
+                    }
+                    helperText={
+                      formik.touched.countryCode && formik.errors.countryCode
+                    }
+                  />
+                )}
+              />
+            </FormControl>
+
+            {/* Phone Number Input */}
+            <Box sx={{ position: "relative" }}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="phoneNumber"
+                label="Phone Number"
+                name="phoneNumber"
+                autoComplete="tel"
+                autoFocus
+                value={formik.values.phoneNumber}
+                onChange={handlePhoneNumberChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.phoneNumber &&
+                  Boolean(formik.errors.phoneNumber)
+                }
+                helperText={
+                  formik.touched.phoneNumber && formik.errors.phoneNumber
+                }
+                InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              id="password"
-              autoComplete="current-password"
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock />
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Phone />
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedCountry.dialCode}
+                        </Typography>
+                      </Box>
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        edge="end"
+                      <Tooltip
+                        title="If there is no account associated with this phone number, an account will be created for you automatically."
+                        placement="top"
+                        arrow
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
+                        <IconButton size="small" edge="end">
+                          <Info fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </InputAdornment>
                   ),
-                },
-              }}
-            />
+                }}
+                placeholder="Enter your phone number"
+              />
+            </Box>
+
+            {/* Preview of full phone number */}
+            {formik.values.phoneNumber && (
+              <Box sx={{ mt: 1, mb: 2 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Full number: <strong>{getFullPhoneNumber()}</strong>
+                </Typography>
+              </Box>
+            )}
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2, py: 1.5 }}
-              disabled={loading}
+              disabled={loading || !formik.isValid}
             >
               {loading ? (
                 <CircularProgress size={24} color="inherit" />

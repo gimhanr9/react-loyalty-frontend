@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL ?? "http://localhost:8080/api";
+  process.env.REACT_APP_API_URL || "http://localhost:8080/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -36,7 +36,7 @@ apiClient.interceptors.response.use(
 );
 
 export const authApi = {
-  login: async (credentials: { email: string; password: string }) => {
+  login: async (credentials: { phoneNumber: string }) => {
     const response = await apiClient.post("/login", credentials);
     return response.data;
   },
