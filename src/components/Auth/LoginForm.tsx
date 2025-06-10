@@ -24,6 +24,7 @@ import { countryCodes, type CountryCode } from "../../data/countryCodes";
 import {
   validatePhoneNumber,
   formatPhoneNumber,
+  getValidationInfo,
 } from "../../utils/phoneValidation";
 
 const validationSchema = yup.object({
@@ -31,15 +32,20 @@ const validationSchema = yup.object({
   phoneNumber: yup
     .string()
     .required("Phone number is required")
-    .test(
-      "phone-validation",
-      "Please enter a valid phone number",
-      function (value) {
-        const { countryCode } = this.parent;
-        if (!value || !countryCode) return false;
-        return validatePhoneNumber(value, countryCode);
+    .test("phone-validation", function (value) {
+      const { countryCode } = this.parent;
+      if (!value || !countryCode)
+        return this.createError({ message: "Phone number is required" });
+
+      const isValid = validatePhoneNumber(value, countryCode);
+      if (!isValid) {
+        const validationInfo = getValidationInfo(countryCode);
+        return this.createError({
+          message: `Please enter a valid phone number (${validationInfo.minLength}-${validationInfo.maxLength} digits). Example: ${validationInfo.example}`,
+        });
       }
-    ),
+      return true;
+    }),
 });
 
 const LoginForm: React.FC = () => {
@@ -73,6 +79,8 @@ const LoginForm: React.FC = () => {
     if (newValue) {
       setSelectedCountry(newValue);
       formik.setFieldValue("countryCode", newValue.dialCode);
+      // Clear phone number when country changes to avoid validation conflicts
+      formik.setFieldValue("phoneNumber", "");
     }
   };
 
@@ -93,6 +101,8 @@ const LoginForm: React.FC = () => {
     }
     return "";
   };
+
+  const validationInfo = getValidationInfo(selectedCountry.dialCode);
 
   return (
     <Container component="main" maxWidth="sm">
@@ -190,6 +200,8 @@ const LoginForm: React.FC = () => {
                 }
                 helperText={
                   formik.touched.phoneNumber && formik.errors.phoneNumber
+                    ? formik.errors.phoneNumber
+                    : `Example: ${validationInfo.example}`
                 }
                 InputProps={{
                   startAdornment: (
@@ -218,7 +230,7 @@ const LoginForm: React.FC = () => {
                     </InputAdornment>
                   ),
                 }}
-                placeholder="Enter your phone number"
+                placeholder={`Enter ${validationInfo.minLength}-${validationInfo.maxLength} digits`}
               />
             </Box>
 

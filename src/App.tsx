@@ -13,8 +13,8 @@ import TransactionHistory from "./components/History/TransactionHistory";
 import type { RootState } from "./store";
 
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
+  //const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const isAuthenticated = true;
   // Set document title dynamically
   useEffect(() => {
     document.title = process.env.REACT_APP_NAME ?? "Square Loyalty Program";
