@@ -10,18 +10,19 @@ import {
   CircularProgress,
   InputAdornment,
   FormControl,
+  Tooltip,
   IconButton,
   Autocomplete,
   Link,
   Divider,
 } from "@mui/material";
-import { Phone, Info, Login } from "@mui/icons-material";
+import { Phone, Info, Person, Email, AccountCircle } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useSelector, useDispatch } from "react-redux";
 import { Link as RouterLink } from "react-router";
 import type { RootState } from "../../store";
-import { loginRequest, clearError } from "../../store/slices/authSlice";
+import { registerRequest, clearError } from "../../store/slices/authSlice";
 import { countryCodes, type CountryCode } from "../../data/countryCodes";
 import {
   validatePhoneNumber,
@@ -30,6 +31,17 @@ import {
 } from "../../utils/phoneValidation";
 
 const validationSchema = yup.object({
+  name: yup
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name cannot exceed 50 characters")
+    .matches(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces")
+    .required("Full name is required"),
+  email: yup
+    .string()
+    .email("Please enter a valid email address")
+    .max(100, "Email cannot exceed 100 characters")
+    .required("Email address is required"),
   countryCode: yup.string().required("Country code is required"),
   phoneNumber: yup
     .string()
@@ -50,7 +62,7 @@ const validationSchema = yup.object({
     }),
 });
 
-const LoginForm: React.FC = () => {
+const RegisterForm: React.FC = () => {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: RootState) => state.auth);
   const [selectedCountry, setSelectedCountry] = React.useState<CountryCode>(
@@ -59,6 +71,8 @@ const LoginForm: React.FC = () => {
 
   const formik = useFormik({
     initialValues: {
+      name: "",
+      email: "",
       countryCode: selectedCountry.dialCode,
       phoneNumber: "",
     },
@@ -67,7 +81,13 @@ const LoginForm: React.FC = () => {
       const fullPhoneNumber = `${
         values.countryCode
       }${values.phoneNumber.replace(/[^\d]/g, "")}`;
-      dispatch(loginRequest({ phoneNumber: fullPhoneNumber }));
+      dispatch(
+        registerRequest({
+          name: values.name.trim(),
+          email: values.email.trim().toLowerCase(),
+          phoneNumber: fullPhoneNumber,
+        })
+      );
     },
   });
 
@@ -115,6 +135,7 @@ const LoginForm: React.FC = () => {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          py: 4,
         }}
       >
         <Paper
@@ -129,9 +150,11 @@ const LoginForm: React.FC = () => {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Login sx={{ fontSize: 40, mr: 1, color: "primary.main" }} />
+            <AccountCircle
+              sx={{ fontSize: 40, mr: 1, color: "primary.main" }}
+            />
             <Typography component="h1" variant="h4">
-              Welcome Back
+              Create Account
             </Typography>
           </Box>
           <Typography
@@ -139,7 +162,7 @@ const LoginForm: React.FC = () => {
             color="text.secondary"
             sx={{ mb: 3, textAlign: "center" }}
           >
-            Sign in to your Square Loyalty account
+            Join Square Loyalty and start earning points today
           </Typography>
 
           {error && (
@@ -153,6 +176,60 @@ const LoginForm: React.FC = () => {
             onSubmit={formik.handleSubmit}
             sx={{ width: "100%" }}
           >
+            {/* Full Name Field */}
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="name"
+              label="Full Name"
+              name="name"
+              autoComplete="name"
+              autoFocus
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.name && Boolean(formik.errors.name)}
+              helperText={formik.touched.name && formik.errors.name}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              placeholder="Enter your full name"
+            />
+
+            {/* Email Field */}
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.email && Boolean(formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              placeholder="Enter your email address"
+            />
+
             {/* Country Code Selector */}
             <FormControl fullWidth margin="normal">
               <Autocomplete
@@ -199,7 +276,6 @@ const LoginForm: React.FC = () => {
                 label="Phone Number"
                 name="phoneNumber"
                 autoComplete="tel"
-                autoFocus
                 value={formik.values.phoneNumber}
                 onChange={handlePhoneNumberChange}
                 onBlur={formik.handleBlur}
@@ -228,9 +304,15 @@ const LoginForm: React.FC = () => {
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton size="small" edge="end">
-                          <Info fontSize="small" />
-                        </IconButton>
+                        <Tooltip
+                          title="Your phone number will be used for account verification and important notifications."
+                          placement="top"
+                          arrow
+                        >
+                          <IconButton size="small" edge="end">
+                            <Info fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </InputAdornment>
                     ),
                   },
@@ -239,6 +321,7 @@ const LoginForm: React.FC = () => {
               />
             </Box>
 
+            {/* Preview of full phone number */}
             {formik.values.phoneNumber && (
               <Box sx={{ mt: 1, mb: 2 }}>
                 <Typography variant="caption" color="text.secondary">
@@ -257,7 +340,7 @@ const LoginForm: React.FC = () => {
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                "Sign In"
+                "Create Account"
               )}
             </Button>
 
@@ -267,13 +350,13 @@ const LoginForm: React.FC = () => {
               </Typography>
             </Divider>
 
-            {/* Register Link */}
+            {/* Login Link */}
             <Box sx={{ textAlign: "center", mb: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Don't have an account?{" "}
+                Already have an account?{" "}
                 <Link
                   component={RouterLink}
-                  to="/register"
+                  to="/login"
                   sx={{
                     color: "primary.main",
                     textDecoration: "none",
@@ -283,7 +366,7 @@ const LoginForm: React.FC = () => {
                     },
                   }}
                 >
-                  Create Account
+                  Sign In
                 </Link>
               </Typography>
             </Box>
@@ -294,4 +377,4 @@ const LoginForm: React.FC = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

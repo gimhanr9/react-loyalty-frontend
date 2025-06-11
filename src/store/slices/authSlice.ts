@@ -4,6 +4,7 @@ interface User {
   id: string;
   phoneNumber: string;
   name: string;
+  email: string;
 }
 
 interface AuthState {
@@ -30,6 +31,17 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
+    registerRequest: (
+      state,
+      action: PayloadAction<{
+        name: string;
+        email: string;
+        phoneNumber: string;
+      }>
+    ) => {
+      state.loading = true;
+      state.error = null;
+    },
     loginSuccess: (
       state,
       action: PayloadAction<{ user: User; token: string }>
@@ -41,7 +53,23 @@ const authSlice = createSlice({
       state.error = null;
       localStorage.setItem("token", action.payload.token);
     },
+    registerSuccess: (
+      state,
+      action: PayloadAction<{ user: User; token: string }>
+    ) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      state.loading = false;
+      state.error = null;
+      localStorage.setItem("token", action.payload.token);
+    },
     loginFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.isAuthenticated = false;
+    },
+    registerFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
       state.isAuthenticated = false;
@@ -60,6 +88,14 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginRequest, loginSuccess, loginFailure, logout, clearError } =
-  authSlice.actions;
+export const {
+  loginRequest,
+  registerRequest,
+  loginSuccess,
+  registerSuccess,
+  loginFailure,
+  registerFailure,
+  logout,
+  clearError,
+} = authSlice.actions;
 export default authSlice.reducer;
