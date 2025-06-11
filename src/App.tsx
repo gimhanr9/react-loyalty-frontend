@@ -5,16 +5,18 @@ import { useEffect } from "react";
 import { store } from "./store";
 import AppLayout from "./components/Layout/AppLayout";
 import LoginForm from "./components/Auth/LoginForm";
+import RegisterForm from "./components/Auth/RegisterForm";
 import Dashboard from "./components/Dashboard/Dashboard";
 import BalanceView from "./components/Balance/BalanceView";
 import EarnPoints from "./components/Points/EarnPoints";
 import RedeemPoints from "./components/Points/RedeemPoints";
 import TransactionHistory from "./components/History/TransactionHistory";
+
 import type { RootState } from "./store";
 
 const AppRoutes: React.FC = () => {
-  //const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const isAuthenticated = true;
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
   // Set document title dynamically
   useEffect(() => {
     document.title = process.env.REACT_APP_NAME ?? "Square Loyalty Program";
@@ -24,6 +26,7 @@ const AppRoutes: React.FC = () => {
     return (
       <Routes>
         <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
