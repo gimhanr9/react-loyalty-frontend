@@ -106,11 +106,6 @@ const Header: React.FC = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem disabled>
-            <AccountCircle sx={{ mr: 1 }} />
-            {user?.name || "User"}
-          </MenuItem>
-          <Divider />
           <MenuItem onClick={handleLogout}>
             <Logout sx={{ mr: 1 }} />
             Logout

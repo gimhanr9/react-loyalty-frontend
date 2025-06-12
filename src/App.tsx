@@ -9,7 +9,6 @@ import RegisterForm from "./components/Auth/RegisterForm";
 import Dashboard from "./components/Dashboard/Dashboard";
 import BalanceView from "./components/Balance/BalanceView";
 import EarnPoints from "./components/Points/EarnPoints";
-import RedeemPoints from "./components/Points/RedeemPoints";
 import TransactionHistory from "./components/History/TransactionHistory";
 
 import type { RootState } from "./store";
@@ -38,7 +37,6 @@ const AppRoutes: React.FC = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/balance" element={<BalanceView />} />
         <Route path="/earn" element={<EarnPoints />} />
-        <Route path="/redeem" element={<RedeemPoints />} />
         <Route path="/history" element={<TransactionHistory />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

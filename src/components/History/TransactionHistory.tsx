@@ -9,13 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   Box,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   LinearProgress,
   Button,
   IconButton,
@@ -45,8 +39,7 @@ const TransactionHistory: React.FC = () => {
   const { transactions, cursor, loading } = useSelector(
     (state: RootState) => state.loyalty
   );
-  const [filter, setFilter] = React.useState<"all" | "earn" | "redeem">("all");
-  const [searchTerm, setSearchTerm] = React.useState("");
+
   const [filteredTransactions, setFilteredTransactions] = React.useState<
     Transaction[]
   >([]);
@@ -59,7 +52,7 @@ const TransactionHistory: React.FC = () => {
   // Filter transactions locally
   useEffect(() => {
     setFilteredTransactions(transactions);
-  }, [transactions, filter, searchTerm]);
+  }, [transactions]);
 
   const handleLoadMore = () => {
     if (cursor && !loading) {
@@ -69,14 +62,6 @@ const TransactionHistory: React.FC = () => {
 
   const handleRefresh = () => {
     dispatch(fetchHistoryRequest({ reset: true }));
-  };
-
-  const handleFilterChange = (newFilter: "all" | "earn" | "redeem") => {
-    setFilter(newFilter);
-  };
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
   };
 
   const formatDate = (timestamp: string) => {
@@ -138,13 +123,7 @@ const TransactionHistory: React.FC = () => {
             <Typography variant="body2" color="text.secondary">
               Showing {filteredTransactions.length} of {transactions.length}{" "}
               transactions
-              {searchTerm || filter !== "all" ? " (filtered)" : ""}
             </Typography>
-            {cursor && (
-              <Typography variant="body2" color="primary.main">
-                More transactions available
-              </Typography>
-            )}
           </Box>
 
           {/* Transactions Table */}
@@ -155,11 +134,6 @@ const TransactionHistory: React.FC = () => {
               />
               <Typography variant="h6" color="text.secondary">
                 No transactions found
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {searchTerm || filter !== "all"
-                  ? "Try adjusting your search or filter criteria"
-                  : "You haven't made any transactions yet"}
               </Typography>
             </Box>
           ) : (

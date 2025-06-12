@@ -9,18 +9,15 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   Box,
 } from "@mui/material";
 import { TrendingUp, TrendingDown } from "@mui/icons-material";
 
 interface Transaction {
   id: string;
-  type: "earn" | "redeem";
+  type: string;
   points: number;
-  description: string;
   timestamp: string;
-  status: "completed" | "pending" | "failed";
 }
 
 interface RecentTransactionsProps {
@@ -37,19 +34,6 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "success";
-      case "pending":
-        return "warning";
-      case "failed":
-        return "error";
-      default:
-        return "default";
-    }
   };
 
   return (
@@ -70,9 +54,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
               <TableHead>
                 <TableRow>
                   <TableCell>Type</TableCell>
-                  <TableCell>Description</TableCell>
                   <TableCell align="right">Points</TableCell>
-                  <TableCell>Status</TableCell>
                   <TableCell>Date</TableCell>
                 </TableRow>
               </TableHead>
@@ -81,35 +63,26 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                   <TableRow key={transaction.id}>
                     <TableCell>
                       <Box sx={{ display: "flex", alignItems: "center" }}>
-                        {transaction.type === "earn" ? (
+                        {transaction.type === "ACCUMULATE_POINTS" ? (
                           <TrendingUp color="success" sx={{ mr: 1 }} />
                         ) : (
                           <TrendingDown color="error" sx={{ mr: 1 }} />
                         )}
-                        {transaction.type === "earn" ? "Earned" : "Redeemed"}
+                        {transaction.type}
                       </Box>
                     </TableCell>
-                    <TableCell>{transaction.description}</TableCell>
                     <TableCell align="right">
                       <Typography
                         variant="body2"
                         color={
-                          transaction.type === "earn"
+                          transaction.points >= 0
                             ? "success.main"
                             : "error.main"
                         }
                         sx={{ fontWeight: "bold" }}
                       >
-                        {transaction.type === "earn" ? "+" : "-"}
-                        {transaction.points}
+                        {transaction.points.toLocaleString()}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={transaction.status}
-                        color={getStatusColor(transaction.status) as any}
-                        size="small"
-                      />
                     </TableCell>
                     <TableCell>{formatDate(transaction.timestamp)}</TableCell>
                   </TableRow>

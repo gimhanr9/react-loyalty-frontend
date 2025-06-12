@@ -11,13 +11,7 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import {
-  Dashboard,
-  AccountBalance,
-  Add,
-  Redeem,
-  History,
-} from "@mui/icons-material";
+import { Dashboard, AccountBalance, Add, History } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
 import type { RootState } from "../../store";
@@ -29,7 +23,6 @@ const menuItems = [
   { text: "Dashboard", icon: <Dashboard />, path: "/dashboard" },
   { text: "Balance", icon: <AccountBalance />, path: "/balance" },
   { text: "Earn Points", icon: <Add />, path: "/earn" },
-  { text: "Redeem Points", icon: <Redeem />, path: "/redeem" },
   { text: "History", icon: <History />, path: "/history" },
 ];
 

@@ -1,19 +1,6 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  LinearProgress,
-  Chip,
-  Grid,
-} from "@mui/material";
-import {
-  AccountBalance,
-  TrendingUp,
-  Redeem,
-  History,
-} from "@mui/icons-material";
+import { Typography, Box, LinearProgress, Grid } from "@mui/material";
+import { AccountBalance } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../store";
 import {
@@ -22,7 +9,6 @@ import {
 } from "../../store/slices/loyaltySlice";
 import StatCard from "./StatCard";
 import RecentTransactions from "./RecentTransactions";
-import PointsChart from "./PointsChart";
 
 const Dashboard: React.FC = () => {
   const dispatch = useDispatch();
@@ -37,21 +23,6 @@ const Dashboard: React.FC = () => {
   }, [dispatch]);
 
   const recentTransactions = transactions.slice(0, 5);
-  const earnedThisMonth = transactions
-    .filter(
-      (t) =>
-        t.type === "earn" &&
-        new Date(t.timestamp).getMonth() === new Date().getMonth()
-    )
-    .reduce((sum, t) => sum + t.points, 0);
-
-  const redeemedThisMonth = transactions
-    .filter(
-      (t) =>
-        t.type === "redeem" &&
-        new Date(t.timestamp).getMonth() === new Date().getMonth()
-    )
-    .reduce((sum, t) => sum + t.points, 0);
 
   if (loading) {
     return (
@@ -60,18 +31,6 @@ const Dashboard: React.FC = () => {
       </Box>
     );
   }
-
-  const getBalanceLabel = () => {
-    if (balance >= 10000) return "Gold";
-    else if (balance >= 5000) return "Silver";
-    else return "Bronze";
-  };
-
-  const getBalanceColor = () => {
-    if (balance >= 10000) return "warning";
-    else if (balance >= 5000) return "info";
-    else return "default";
-  };
 
   return (
     <Box>
@@ -94,94 +53,6 @@ const Dashboard: React.FC = () => {
             icon={<AccountBalance />}
             color="primary"
           />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard
-            title="Earned This Month"
-            value={earnedThisMonth.toLocaleString()}
-            subtitle="points"
-            icon={<TrendingUp />}
-            color="success"
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard
-            title="Redeemed This Month"
-            value={redeemedThisMonth.toLocaleString()}
-            subtitle="points"
-            icon={<Redeem />}
-            color="warning"
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard
-            title="Total Transactions"
-            value={transactions.length.toString()}
-            subtitle="transactions"
-            icon={<History />}
-            color="info"
-          />
-        </Grid>
-
-        {/* Points Chart */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <PointsChart transactions={transactions} />
-        </Grid>
-
-        {/* Account Status */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Account Status
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 2,
-                  }}
-                >
-                  <Typography variant="body2">Loyalty Tier</Typography>
-                  <Chip
-                    label={getBalanceLabel()}
-                    color={getBalanceColor()}
-                    size="small"
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 2,
-                  }}
-                >
-                  <Typography variant="body2">Next Tier Progress</Typography>
-                  <Typography variant="body2">
-                    {balance >= 10000
-                      ? "Max Tier"
-                      : `${Math.min(
-                          100,
-                          ((balance % 5000) / 5000) * 100
-                        ).toFixed(0)}%`}
-                  </Typography>
-                </Box>
-                {balance < 10000 && (
-                  <LinearProgress
-                    variant="determinate"
-                    value={Math.min(100, ((balance % 5000) / 5000) * 100)}
-                    sx={{ mb: 2 }}
-                  />
-                )}
-                <Typography variant="body2" color="text.secondary">
-                  {balance >= 10000
-                    ? "You've reached the highest tier!"
-                    : `${5000 - (balance % 5000)} points to next tier`}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
         </Grid>
 
         {/* Recent Transactions */}
