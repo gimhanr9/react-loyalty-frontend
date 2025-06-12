@@ -8,7 +8,7 @@ interface Transaction {
 }
 
 interface RewardTier {
-  readonlyewardTierId: string;
+  rewardTierId: string;
   discountPercentage: number;
 }
 
@@ -122,7 +122,11 @@ const loyaltySlice = createSlice({
     },
     redeemPointsRequest: (
       state,
-      action: PayloadAction<{ points: number; description: string }>
+      action: PayloadAction<{
+        amount: number;
+        description: string;
+        rewardtier: string;
+      }>
     ) => {
       state.loading = true;
       state.error = null;

@@ -79,7 +79,11 @@ export const loyaltyApi = {
     return response.data;
   },
 
-  redeemPoints: async (data: { points: number; description: string }) => {
+  redeemPoints: async (data: {
+    amount: number;
+    description: string;
+    rewardtier: string;
+  }) => {
     const response = await apiClient.post("/redeem", data);
     return response.data;
   },

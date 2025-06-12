@@ -34,6 +34,7 @@ import type { RootState } from "../../store";
 import {
   earnPointsRequest,
   fetchRewardTierRequest,
+  redeemPointsRequest,
 } from "../../store/slices/loyaltySlice";
 
 const validationSchema = yup.object({
@@ -136,13 +137,18 @@ const EarnPoints: React.FC = () => {
   };
 
   const handleRedeemDiscount = () => {
-    // Navigate to redeem page or handle discount redemption
-    // For now, we'll just close the dialog and reset form
-    formik.resetForm();
-    setPendingFormData(null);
+    if (pendingFormData) {
+      dispatch(
+        redeemPointsRequest({
+          amount: pendingFormData.amount,
+          description: pendingFormData.description,
+          rewardtier: rewardTier?.rewardTierId ?? "",
+        })
+      );
+      formik.resetForm();
+      setPendingFormData(null);
+    }
     setShowDiscountDialog(false);
-    // You can add navigation logic here
-    // navigate('/redeem')
   };
 
   const handleCloseDialog = () => {

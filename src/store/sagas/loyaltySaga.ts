@@ -97,7 +97,11 @@ function* earnPointsSaga(
 }
 
 function* redeemPointsSaga(
-  action: PayloadAction<{ points: number; description: string }>
+  action: PayloadAction<{
+    amount: number;
+    description: string;
+    rewardtier: string;
+  }>
 ) {
   try {
     const response: { balance: number; rewardtier: any } = yield call(
