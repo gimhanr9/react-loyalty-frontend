@@ -10,22 +10,31 @@ import {
   Alert,
   CircularProgress,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Divider,
 } from "@mui/material";
 import {
   Add,
   ShoppingCart,
   Restaurant,
   LocalGasStation,
+  Close,
+  LocalOffer,
+  CheckCircle,
 } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
 import type { RootState } from "../../store";
 import {
   earnPointsRequest,
   fetchRewardTierRequest,
 } from "../../store/slices/loyaltySlice";
-import { useEffect } from "react";
 
 const validationSchema = yup.object({
   amount: yup
@@ -66,6 +75,11 @@ const EarnPoints: React.FC = () => {
   const { rewardTier, loading, error } = useSelector(
     (state: RootState) => state.loyalty
   );
+  const [showDiscountDialog, setShowDiscountDialog] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<{
+    amount: number;
+    description: string;
+  } | null>(null);
 
   useEffect(() => {
     dispatch(fetchRewardTierRequest());
@@ -78,13 +92,20 @@ const EarnPoints: React.FC = () => {
     },
     validationSchema: validationSchema,
     onSubmit: (values, { resetForm }) => {
-      dispatch(
-        earnPointsRequest({
-          amount: Number(values.amount),
-          description: values.description,
-        })
-      );
-      resetForm();
+      const formData = {
+        amount: Number(values.amount),
+        description: values.description,
+      };
+
+      // Check if discount is available
+      if (rewardTier && rewardTier.discountPercentage > 0) {
+        setPendingFormData(formData);
+        setShowDiscountDialog(true);
+      } else {
+        // No discount available, proceed directly
+        dispatch(earnPointsRequest(formData));
+        resetForm();
+      }
     },
   });
 
@@ -99,6 +120,37 @@ const EarnPoints: React.FC = () => {
     const numAmount = Number(amount);
     return isNaN(numAmount) ? 0 : Math.floor(numAmount * 2);
   };
+
+  const calculateDiscountedPrice = (originalPrice: number) => {
+    if (!rewardTier || rewardTier.discountPercentage <= 0) return originalPrice;
+    return originalPrice * (1 - rewardTier.discountPercentage / 100);
+  };
+
+  const handleContinueWithoutDiscount = () => {
+    if (pendingFormData) {
+      dispatch(earnPointsRequest(pendingFormData));
+      formik.resetForm();
+      setPendingFormData(null);
+    }
+    setShowDiscountDialog(false);
+  };
+
+  const handleRedeemDiscount = () => {
+    // Navigate to redeem page or handle discount redemption
+    // For now, we'll just close the dialog and reset form
+    formik.resetForm();
+    setPendingFormData(null);
+    setShowDiscountDialog(false);
+    // You can add navigation logic here
+    // navigate('/redeem')
+  };
+
+  const handleCloseDialog = () => {
+    setShowDiscountDialog(false);
+    setPendingFormData(null);
+  };
+
+  const hasDiscount = rewardTier && rewardTier.discountPercentage > 0;
 
   return (
     <Box>
@@ -116,19 +168,92 @@ const EarnPoints: React.FC = () => {
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Quick Actions
+                {hasDiscount && (
+                  <Chip
+                    icon={<LocalOffer />}
+                    label={`${rewardTier.discountPercentage}% OFF Available`}
+                    color="success"
+                    size="small"
+                    sx={{ ml: 2 }}
+                  />
+                )}
               </Typography>
               <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                {quickActions.map((action, index) => (
-                  <Chip
-                    key={index}
-                    icon={action.icon}
-                    label={`${action.label} - $${action.amount}`}
-                    onClick={() => handleQuickAction(action)}
-                    clickable
-                    variant="outlined"
-                    sx={{ py: 2, px: 1 }}
-                  />
-                ))}
+                {quickActions.map((action, index) => {
+                  const originalPrice = action.amount;
+                  const discountedPrice =
+                    calculateDiscountedPrice(originalPrice);
+                  const showDiscount =
+                    hasDiscount && discountedPrice < originalPrice;
+
+                  return (
+                    <Box key={index} sx={{ position: "relative" }}>
+                      <Chip
+                        icon={action.icon}
+                        label={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <span>{action.label}</span>
+                            {showDiscount ? (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 0.5,
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    textDecoration: "line-through",
+                                    color: "text.secondary",
+                                  }}
+                                >
+                                  ${originalPrice}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontWeight: "bold",
+                                    color: "success.main",
+                                  }}
+                                >
+                                  ${discountedPrice.toFixed(2)}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <span>- ${originalPrice}</span>
+                            )}
+                          </Box>
+                        }
+                        onClick={() => handleQuickAction(action)}
+                        clickable
+                        variant="outlined"
+                        sx={{ py: 2, px: 1 }}
+                        color={showDiscount ? "success" : "default"}
+                      />
+                      {showDiscount && (
+                        <Chip
+                          label={`${rewardTier.discountPercentage}% OFF`}
+                          size="small"
+                          color="success"
+                          sx={{
+                            position: "absolute",
+                            top: -8,
+                            right: -8,
+                            fontSize: "0.7rem",
+                            height: 20,
+                          }}
+                        />
+                      )}
+                    </Box>
+                  );
+                })}
               </Box>
             </CardContent>
           </Card>
@@ -173,6 +298,40 @@ const EarnPoints: React.FC = () => {
                     },
                   }}
                 />
+
+                {/* Show discounted price if applicable */}
+                {formik.values.amount && hasDiscount && (
+                  <Box sx={{ mt: 1, mb: 2 }}>
+                    <Alert severity="success" icon={<LocalOffer />}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
+                        <Box>
+                          <Typography variant="body2">
+                            Original:{" "}
+                            <span style={{ textDecoration: "line-through" }}>
+                              ${formik.values.amount}
+                            </span>
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: "bold", color: "success.main" }}
+                          >
+                            With {rewardTier.discountPercentage}% discount: $
+                            {calculateDiscountedPrice(
+                              Number(formik.values.amount)
+                            ).toFixed(2)}
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={`${rewardTier.discountPercentage}% OFF`}
+                          color="success"
+                          size="small"
+                        />
+                      </Box>
+                    </Alert>
+                  </Box>
+                )}
 
                 <TextField
                   margin="normal"
@@ -241,11 +400,136 @@ const EarnPoints: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   • Points never expire
                 </Typography>
+                {hasDiscount && (
+                  <>
+                    <Divider sx={{ my: 2 }} />
+                    <Alert severity="success" sx={{ mt: 2 }}>
+                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                        🎉 Special Offer Available!
+                      </Typography>
+                      <Typography variant="body2">
+                        Get {rewardTier.discountPercentage}% off your purchases
+                      </Typography>
+                    </Alert>
+                  </>
+                )}
               </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Discount Confirmation Dialog */}
+      <Dialog
+        open={showDiscountDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <LocalOffer color="success" />
+            <Typography variant="h6">Discount Available!</Typography>
+          </Box>
+          <IconButton onClick={handleCloseDialog} size="small">
+            <Close />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent>
+          <Alert severity="success" sx={{ mb: 3 }}>
+            <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
+              🎉 You have a {rewardTier?.discountPercentage}% discount
+              available!
+            </Typography>
+            <Typography variant="body2">
+              You can apply this discount to your current purchase and save
+              money.
+            </Typography>
+          </Alert>
+
+          {pendingFormData && (
+            <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1, mb: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Purchase Details:
+              </Typography>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+              >
+                <Typography variant="body2">Original Amount:</Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ textDecoration: "line-through" }}
+                >
+                  ${pendingFormData.amount}
+                </Typography>
+              </Box>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                  With {rewardTier?.discountPercentage}% discount:
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: "bold", color: "success.main" }}
+                >
+                  ${calculateDiscountedPrice(pendingFormData.amount).toFixed(2)}
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "success.main", fontWeight: "bold" }}
+                >
+                  You save:
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "success.main", fontWeight: "bold" }}
+                >
+                  $
+                  {(
+                    pendingFormData.amount -
+                    calculateDiscountedPrice(pendingFormData.amount)
+                  ).toFixed(2)}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          <Typography variant="body2" color="text.secondary">
+            What would you like to do?
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button
+            onClick={handleContinueWithoutDiscount}
+            variant="outlined"
+            sx={{ mr: 1 }}
+          >
+            Continue Without Discount
+          </Button>
+          <Button
+            onClick={handleRedeemDiscount}
+            variant="contained"
+            color="success"
+            startIcon={<CheckCircle />}
+          >
+            Apply {rewardTier?.discountPercentage}% Discount
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
