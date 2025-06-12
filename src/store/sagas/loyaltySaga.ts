@@ -23,15 +23,28 @@ function* fetchBalanceSaga() {
     yield put(fetchBalanceSuccess(balance));
   } catch (error: any) {
     const errorMessage =
-      error.response?.data?.message ?? "Failed to fetch balance";
+      error.response?.data?.message || "Failed to fetch balance";
     yield put(fetchBalanceFailure(errorMessage));
   }
 }
 
-function* fetchHistorySaga() {
+function* fetchHistorySaga(
+  action: PayloadAction<{ cursor?: string; reset?: boolean } | undefined>
+) {
   try {
-    const transactions: any[] = yield call(loyaltyApi.getHistory);
-    yield put(fetchHistorySuccess(transactions));
+    const params = action.payload || {};
+    const response: {
+      transactions: any[];
+      cursor: string | null;
+      hasMore: boolean;
+    } = yield call(loyaltyApi.getHistory, params.cursor);
+    yield put(
+      fetchHistorySuccess({
+        transactions: response.transactions,
+        cursor: response.cursor,
+        hasMore: !!response.cursor && response.cursor !== "",
+      })
+    );
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message ?? "Failed to fetch history";

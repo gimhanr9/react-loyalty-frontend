@@ -57,9 +57,16 @@ export const loyaltyApi = {
     return response.data.balance;
   },
 
-  getHistory: async () => {
-    const response = await apiClient.get("/history");
-    return response.data.transactions;
+  getHistory: async (cursor?: string) => {
+    const params = cursor ? { cursor } : {};
+    const response = await apiClient.get("/history", { params });
+
+    // Match the exact API response format: { "history": [], cursor: "" }
+    return {
+      transactions: response.data.transactions || [], // Use history array from response
+      cursor: response.data.cursor || null, // Use cursor from response
+      hasMore: !!response.data.cursor, // hasMore is true if cursor exists and is not empty
+    };
   },
 
   earnPoints: async (data: { amount: number; description: string }) => {

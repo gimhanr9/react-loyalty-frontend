@@ -39,19 +39,19 @@ const validationSchema = yup.object({
 const quickActions = [
   {
     label: "Grocery Shopping",
-    amount: 50,
+    amount: 500,
     icon: <ShoppingCart />,
     description: "Grocery store purchase",
   },
   {
     label: "Restaurant",
-    amount: 25,
+    amount: 250,
     icon: <Restaurant />,
     description: "Restaurant dining",
   },
   {
     label: "Gas Station",
-    amount: 30,
+    amount: 300,
     icon: <LocalGasStation />,
     description: "Gas station purchase",
   },

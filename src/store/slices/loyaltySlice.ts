@@ -12,6 +12,8 @@ interface Transaction {
 interface LoyaltyState {
   balance: number;
   transactions: Transaction[];
+  cursor: string | null;
+  hasMore: boolean;
   loading: boolean;
   error: string | null;
 }
@@ -19,6 +21,8 @@ interface LoyaltyState {
 const initialState: LoyaltyState = {
   balance: 0,
   transactions: [],
+  cursor: null,
+  hasMore: false,
   loading: false,
   error: null,
 };
@@ -39,12 +43,36 @@ const loyaltySlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    fetchHistoryRequest: (state) => {
+    fetchHistoryRequest: (
+      state,
+      action: PayloadAction<{ cursor?: string; reset?: boolean } | undefined>
+    ) => {
       state.loading = true;
       state.error = null;
+      // If reset is true, we're starting fresh (e.g., new search/filter)
+      if (action.payload?.reset) {
+        state.transactions = [];
+        state.cursor = null;
+        state.hasMore = false;
+      }
     },
-    fetchHistorySuccess: (state, action: PayloadAction<Transaction[]>) => {
-      state.transactions = action.payload;
+    fetchHistorySuccess: (
+      state,
+      action: PayloadAction<{
+        transactions: Transaction[];
+        cursor: string | null;
+        hasMore: boolean;
+      }>
+    ) => {
+      const { transactions, cursor, hasMore } = action.payload;
+      // If we have a cursor in the request, append transactions; otherwise replace
+      if (state.cursor && !action.payload.cursor) {
+        state.transactions = [...state.transactions, ...transactions];
+      } else {
+        state.transactions = transactions;
+      }
+      state.cursor = cursor;
+      state.hasMore = hasMore;
       state.loading = false;
     },
     fetchHistoryFailure: (state, action: PayloadAction<string>) => {
