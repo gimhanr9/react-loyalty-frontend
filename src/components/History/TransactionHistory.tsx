@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -40,7 +40,7 @@ const TransactionHistory: React.FC = () => {
     (state: RootState) => state.loyalty
   );
 
-  const [filteredTransactions, setFilteredTransactions] = React.useState<
+  const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
 

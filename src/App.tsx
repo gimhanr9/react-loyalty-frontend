@@ -7,7 +7,6 @@ import AppLayout from "./components/Layout/AppLayout";
 import LoginForm from "./components/Auth/LoginForm";
 import RegisterForm from "./components/Auth/RegisterForm";
 import Dashboard from "./components/Dashboard/Dashboard";
-import BalanceView from "./components/Balance/BalanceView";
 import EarnPoints from "./components/Points/EarnPoints";
 import TransactionHistory from "./components/History/TransactionHistory";
 
@@ -35,7 +34,6 @@ const AppRoutes: React.FC = () => {
     <AppLayout>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/balance" element={<BalanceView />} />
         <Route path="/earn" element={<EarnPoints />} />
         <Route path="/history" element={<TransactionHistory />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

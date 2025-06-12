@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
@@ -14,7 +14,7 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { theme: themeMode } = useSelector((state: RootState) => state.ui);
 
-  const theme = React.useMemo(
+  const theme = useMemo(
     () => createAppTheme(themeMode === "dark" ? "dark" : "light"),
     [themeMode]
   );

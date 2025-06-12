@@ -163,9 +163,6 @@ const EarnPoints: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         Earn Points
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Earn 2 points for every dollar spent
-      </Typography>
 
       <Grid container spacing={3}>
         {/* Quick Actions */}
@@ -385,44 +382,6 @@ const EarnPoints: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-
-        {/* Points Info */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                How It Works
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  • Earn 2 points for every $1 spent
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  • Points are added instantly
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  • Use points for rewards and discounts
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  • Points never expire
-                </Typography>
-                {hasDiscount && (
-                  <>
-                    <Divider sx={{ my: 2 }} />
-                    <Alert severity="success" sx={{ mt: 2 }}>
-                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                        🎉 Special Offer Available!
-                      </Typography>
-                      <Typography variant="body2">
-                        Get {rewardTier.discountPercentage}% off your purchases
-                      </Typography>
-                    </Alert>
-                  </>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
       </Grid>
 
       {/* Discount Confirmation Dialog */}
@@ -431,8 +390,10 @@ const EarnPoints: React.FC = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: 2 },
+        slotProps={{
+          paper: {
+            sx: { borderRadius: 2 },
+          },
         }}
       >
         <DialogTitle

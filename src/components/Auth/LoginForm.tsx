@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Paper,
@@ -53,7 +53,7 @@ const validationSchema = yup.object({
 const LoginForm: React.FC = () => {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state: RootState) => state.auth);
-  const [selectedCountry, setSelectedCountry] = React.useState<CountryCode>(
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(
     countryCodes.find((c) => c.code === "US") || countryCodes[0]
   );
 
@@ -71,7 +71,7 @@ const LoginForm: React.FC = () => {
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       dispatch(clearError());
     };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Typography, Box, LinearProgress, Grid } from "@mui/material";
 import { AccountBalance } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
   );
   const { user } = useSelector((state: RootState) => state.auth);
 
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch(fetchBalanceRequest());
     dispatch(fetchHistoryRequest());
   }, [dispatch]);
@@ -45,7 +45,7 @@ const Dashboard: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Stats Cards */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12 }}>
           <StatCard
             title="Current Balance"
             value={balance.toLocaleString()}
