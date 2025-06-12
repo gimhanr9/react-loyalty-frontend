@@ -25,7 +25,7 @@ function* loginSaga(action: PayloadAction<{ phoneNumber: string }>) {
       })
     );
   } catch (error: any) {
-    const errorMessage = error.response?.data?.message || "Login failed";
+    const errorMessage = error.response?.data?.message ?? "Login failed";
     yield put(loginFailure(errorMessage));
     yield put(
       addNotification({
@@ -52,7 +52,7 @@ function* registerSaga(
       })
     );
   } catch (error: any) {
-    const errorMessage = error.response?.data?.message || "Registration failed";
+    const errorMessage = error.response?.data?.message ?? "Registration failed";
     yield put(registerFailure(errorMessage));
     yield put(
       addNotification({

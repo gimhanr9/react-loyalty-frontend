@@ -358,16 +358,6 @@ const EarnPoints: React.FC = () => {
                   placeholder="Describe your purchase..."
                 />
 
-                {formik.values.amount && (
-                  <Alert severity="info" sx={{ mt: 2 }}>
-                    You will earn{" "}
-                    <strong>
-                      {calculatePoints(formik.values.amount)} points
-                    </strong>{" "}
-                    for this purchase
-                  </Alert>
-                )}
-
                 <Button
                   type="submit"
                   fullWidth
