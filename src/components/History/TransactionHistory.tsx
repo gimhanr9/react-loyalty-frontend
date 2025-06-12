@@ -42,7 +42,7 @@ interface Transaction {
 
 const TransactionHistory: React.FC = () => {
   const dispatch = useDispatch();
-  const { transactions, cursor, hasMore, loading } = useSelector(
+  const { transactions, cursor, loading } = useSelector(
     (state: RootState) => state.loyalty
   );
   const [filter, setFilter] = React.useState<"all" | "earn" | "redeem">("all");

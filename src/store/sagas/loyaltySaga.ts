@@ -13,6 +13,9 @@ import {
   redeemPointsRequest,
   redeemPointsSuccess,
   redeemPointsFailure,
+  fetchRewardTierSuccess,
+  fetchRewardTierFailure,
+  fetchRewardTierRequest,
 } from "../slices/loyaltySlice";
 import { addNotification } from "../slices/uiSlice";
 import { loyaltyApi } from "../../services/apiClient";
@@ -23,8 +26,21 @@ function* fetchBalanceSaga() {
     yield put(fetchBalanceSuccess(balance));
   } catch (error: any) {
     const errorMessage =
-      error.response?.data?.message || "Failed to fetch balance";
+      error.response?.data?.message ?? "Failed to fetch balance";
     yield put(fetchBalanceFailure(errorMessage));
+  }
+}
+
+function* fetchRewardTierSaga() {
+  try {
+    const response: { balance: number; rewardtier: any } = yield call(
+      loyaltyApi.getRewardTier
+    );
+    yield put(fetchRewardTierSuccess(response));
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message ?? "Failed to fetch reward tiers";
+    yield put(fetchRewardTierFailure(errorMessage));
   }
 }
 
@@ -56,14 +72,14 @@ function* earnPointsSaga(
   action: PayloadAction<{ amount: number; description: string }>
 ) {
   try {
-    const response: { points: number; transaction: any } = yield call(
+    const response: { balance: number; rewardtier: any } = yield call(
       loyaltyApi.earnPoints,
       action.payload
     );
     yield put(earnPointsSuccess(response));
     yield put(
       addNotification({
-        message: `Successfully earned ${response.points} points!`,
+        message: `Successfully earned points!`,
         type: "success",
       })
     );
@@ -84,14 +100,14 @@ function* redeemPointsSaga(
   action: PayloadAction<{ points: number; description: string }>
 ) {
   try {
-    const response: { points: number; transaction: any } = yield call(
+    const response: { balance: number; rewardtier: any } = yield call(
       loyaltyApi.redeemPoints,
       action.payload
     );
     yield put(redeemPointsSuccess(response));
     yield put(
       addNotification({
-        message: `Successfully redeemed ${response.points} points!`,
+        message: `Successfully redeemed points!`,
         type: "success",
       })
     );
@@ -113,4 +129,5 @@ export function* loyaltySaga() {
   yield takeLatest(fetchHistoryRequest.type, fetchHistorySaga);
   yield takeLatest(earnPointsRequest.type, earnPointsSaga);
   yield takeLatest(redeemPointsRequest.type, redeemPointsSaga);
+  yield takeLatest(fetchRewardTierRequest.type, fetchRewardTierSaga);
 }

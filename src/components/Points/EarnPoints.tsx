@@ -21,12 +21,16 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../store";
-import { earnPointsRequest } from "../../store/slices/loyaltySlice";
+import {
+  earnPointsRequest,
+  fetchRewardTierRequest,
+} from "../../store/slices/loyaltySlice";
+import { useEffect } from "react";
 
 const validationSchema = yup.object({
   amount: yup
     .number()
-    .min(1, "Amount must be at least $1")
+    .min(100, "Amount must be at least $1")
     .max(10000, "Amount cannot exceed $10,000")
     .required("Amount is required"),
   description: yup
@@ -59,7 +63,13 @@ const quickActions = [
 
 const EarnPoints: React.FC = () => {
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state: RootState) => state.loyalty);
+  const { rewardTier, loading, error } = useSelector(
+    (state: RootState) => state.loyalty
+  );
+
+  useEffect(() => {
+    dispatch(fetchRewardTierRequest());
+  }, [dispatch]);
 
   const formik = useFormik({
     initialValues: {

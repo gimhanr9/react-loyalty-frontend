@@ -57,6 +57,11 @@ export const loyaltyApi = {
     return response.data.balance;
   },
 
+  getRewardTier: async () => {
+    const response = await apiClient.get("/rewardtiers");
+    return response.data;
+  },
+
   getHistory: async (cursor?: string) => {
     const params = cursor ? { cursor } : {};
     const response = await apiClient.get("/history", { params });

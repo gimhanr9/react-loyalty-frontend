@@ -2,11 +2,14 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface Transaction {
   id: string;
-  type: "earn" | "redeem";
+  type: string;
   points: number;
-  description: string;
   timestamp: string;
-  status: "completed" | "pending" | "failed";
+}
+
+interface RewardTier {
+  readonlyewardTierId: string;
+  discountPercentage: number;
 }
 
 interface LoyaltyState {
@@ -16,6 +19,7 @@ interface LoyaltyState {
   hasMore: boolean;
   loading: boolean;
   error: string | null;
+  rewardTier: RewardTier | null;
 }
 
 const initialState: LoyaltyState = {
@@ -25,6 +29,7 @@ const initialState: LoyaltyState = {
   hasMore: false,
   loading: false,
   error: null,
+  rewardTier: null,
 };
 
 const loyaltySlice = createSlice({
@@ -35,11 +40,28 @@ const loyaltySlice = createSlice({
       state.loading = true;
       state.error = null;
     },
+    fetchRewardTierRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
     fetchBalanceSuccess: (state, action: PayloadAction<number>) => {
       state.balance = action.payload;
       state.loading = false;
     },
     fetchBalanceFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    fetchRewardTierSuccess: (
+      state,
+      action: PayloadAction<{ balance: number; rewardtier: RewardTier }>
+    ) => {
+      state.balance = action.payload.balance;
+      state.rewardTier = action.payload.rewardtier;
+      state.loading = false;
+    },
+    fetchRewardTierFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
@@ -88,10 +110,10 @@ const loyaltySlice = createSlice({
     },
     earnPointsSuccess: (
       state,
-      action: PayloadAction<{ points: number; transaction: Transaction }>
+      action: PayloadAction<{ balance: number; rewardtier: RewardTier }>
     ) => {
-      state.balance += action.payload.points;
-      state.transactions.unshift(action.payload.transaction);
+      state.balance -= action.payload.balance;
+      state.rewardTier = action.payload.rewardtier;
       state.loading = false;
     },
     earnPointsFailure: (state, action: PayloadAction<string>) => {
@@ -107,10 +129,10 @@ const loyaltySlice = createSlice({
     },
     redeemPointsSuccess: (
       state,
-      action: PayloadAction<{ points: number; transaction: Transaction }>
+      action: PayloadAction<{ balance: number; rewardtier: RewardTier }>
     ) => {
-      state.balance -= action.payload.points;
-      state.transactions.unshift(action.payload.transaction);
+      state.balance -= action.payload.balance;
+      state.rewardTier = action.payload.rewardtier;
       state.loading = false;
     },
     redeemPointsFailure: (state, action: PayloadAction<string>) => {
@@ -125,8 +147,11 @@ const loyaltySlice = createSlice({
 
 export const {
   fetchBalanceRequest,
+  fetchRewardTierRequest,
   fetchBalanceSuccess,
   fetchBalanceFailure,
+  fetchRewardTierSuccess,
+  fetchRewardTierFailure,
   fetchHistoryRequest,
   fetchHistorySuccess,
   fetchHistoryFailure,
