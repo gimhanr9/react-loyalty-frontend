@@ -23,7 +23,7 @@ Variables needed for the environment file:
 
 1 Clone the project.
 
-2 Add the environment files.
+2 Add the environment file.
 
 3 Go to the project directory and in the terminal run command `npm install`
 
