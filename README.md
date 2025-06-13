@@ -6,13 +6,9 @@ This is the frontend for the Square Loyalty Challenge built using React.
 
 
 ## Requirements
-Two environment files
+Add `.env` environment file
 
- 1 .env.development
-
- 2 .env.production (optional)
-
-Variables needed for environment files:
+Variables needed for the environment file:
 
 `REACT_APP_NAME="Square Loyalty Program"`
 
